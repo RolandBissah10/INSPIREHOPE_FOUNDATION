@@ -1,0 +1,98 @@
+:root {
+  --bg: #f5f1e8;
+  --bg-alt: #fffdf8;
+  --ink-950: #102a27;
+  --ink-900: #163530;
+  --ink-800: #274641;
+  --ink-600: #5d706c;
+  --ink-500: #7a8885;
+  --line-soft: rgba(18, 59, 54, 0.1);
+  --teal-800: #0e5e55;
+  --teal-700: #147166;
+  --teal-600: #1b8474;
+  --teal-500: #279683;
+  --orange-700: #9e5920;
+  --orange-600: #c16c2d;
+  --orange-500: #de8846;
+  --font-body: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --shadow-soft: 0 24px 60px rgba(17, 55, 50, 0.08);
+
+  font-family: var(--font-body);
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--ink-800);
+  background:
+    radial-gradient(circle at top, rgba(36, 149, 130, 0.1), transparent 32%),
+    linear-gradient(180deg, #faf7f0 0%, #f4efe4 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.35) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 75%);
+  pointer-events: none;
+  z-index: -2;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid rgba(31, 159, 130, 0.35);
+  outline-offset: 3px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+p {
+  margin: 0;
+}
+
+#root {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  #root {
+    width: min(100% - 1.2rem, 1180px);
+  }
+}
