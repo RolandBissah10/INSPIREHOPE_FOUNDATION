@@ -72,6 +72,39 @@ const journey = [
   },
 ]
 
+const members = [
+  {
+    name: 'Kezia Narweh',
+    role: 'Executive Director',
+    detail:
+      'Leads the foundation vision, partnerships, and long-term community strategy with a strong focus on inclusion.',
+  },
+  {
+    name: 'Rose Kumi-Larbi',
+    role: 'Programs Coordinator',
+    detail:
+      'Oversees outreach activities, volunteer experiences, and program delivery to ensure every initiative reaches people well.',
+  },
+  {
+    name: 'Margaret Hunt',
+    role: 'Community Support Lead',
+    detail:
+      'Works directly with beneficiaries and families, helping the team deliver assistance with dignity and care.',
+  },
+  {
+    name: 'Francis Roland Bissah',
+    role: 'Donor Relations Officer',
+    detail:
+      'Builds trust with supporters by coordinating campaigns, stewardship, and transparent communication around impact.',
+  },
+  {
+    name: 'Henry Amankwah Famiyeh',
+    role: 'Communications and Advocacy Lead',
+    detail:
+      'Shapes the foundation voice, shares impact stories, and helps the wider community stay informed and engaged.',
+  },
+]
+
 function App() {
   return (
     <div className="page-shell">
@@ -87,6 +120,7 @@ function App() {
         <nav className="nav">
           <a href="#impact">Impact</a>
           <a href="#programs">Programs</a>
+          <a href="#members">Members</a>
           <a href="#events">Events</a>
           <a href="#join">Get Involved</a>
         </nav>
@@ -198,6 +232,33 @@ function App() {
           </article>
         </section>
 
+        <section className="members-section" id="members">
+          <div className="section-heading">
+            <p className="eyebrow">Our members</p>
+            <h2>The people helping the mission take shape every day.</h2>
+            <p>
+              This section is ready for your team photos. Each member card can display
+              an image, role, and short profile so visitors can connect with the people
+              behind InspireHope Foundation.
+            </p>
+          </div>
+
+          <div className="members-grid">
+            {members.map((member) => (
+              <article key={member.name} className="member-card">
+                <div className="member-photo" aria-label={`${member.name} photo placeholder`}>
+                  <span>Add image</span>
+                </div>
+                <div className="member-content">
+                  <p className="member-role">{member.role}</p>
+                  <h3>{member.name}</h3>
+                  <p>{member.detail}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="events-section" id="events">
           <div className="section-heading">
             <p className="eyebrow">Upcoming engagement</p>
@@ -247,6 +308,7 @@ function App() {
         <div className="footer-links">
           <a href="#impact">Impact</a>
           <a href="#programs">Programs</a>
+          <a href="#members">Members</a>
           <a href="#events">Events</a>
           <a href="#join">Contact</a>
         </div>
