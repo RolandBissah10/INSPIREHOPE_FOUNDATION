@@ -72,6 +72,58 @@ const journey = [
   },
 ]
 
+const values = [
+  {
+    title: 'Inclusion',
+    text: 'We create spaces where every person is seen, heard, and welcomed without barriers.',
+  },
+  {
+    title: 'Dignity',
+    text: 'We deliver support with empathy, respect, and care for every person we serve.',
+  },
+  {
+    title: 'Transparency',
+    text: 'We value clear communication, accountability, and visible impact across our programs.',
+  },
+  {
+    title: 'Community',
+    text: 'We believe change grows stronger when people work together with trust and shared purpose.',
+  },
+]
+
+const stories = [
+  {
+    name: 'Abena, beneficiary family advocate',
+    text: 'The support process felt clear and respectful. We were not treated like a number. We were treated like people who mattered.',
+  },
+  {
+    name: 'Samuel, volunteer mentor',
+    text: 'Serving through InspireHope gave me a practical way to show up for young people and help them see real possibility ahead.',
+  },
+  {
+    name: 'Efua, donor partner',
+    text: 'What stood out most was the transparency. I could see the mission, the people, and the outcomes all connected clearly.',
+  },
+]
+
+const faqs = [
+  {
+    question: 'How can I support InspireHope Foundation?',
+    answer:
+      'You can support by donating, volunteering, partnering with the foundation, or helping share community programs with others.',
+  },
+  {
+    question: 'Can beneficiaries apply for support online?',
+    answer:
+      'Yes. The platform is designed to let beneficiaries submit applications, follow progress, and receive updates in a more accessible way.',
+  },
+  {
+    question: 'Are volunteer opportunities open to everyone?',
+    answer:
+      'Volunteer opportunities are open to people who want to contribute their time and skills, with different roles available depending on each event or program.',
+  },
+]
+
 const members = [
   {
     name: 'Kezia Narweh',
@@ -118,9 +170,11 @@ function App() {
         </a>
 
         <nav className="nav">
+          <a href="#about">About</a>
           <a href="#impact">Impact</a>
           <a href="#programs">Programs</a>
           <a href="#members">Members</a>
+          <a href="#faq">FAQ</a>
           <a href="#events">Events</a>
           <a href="#join">Get Involved</a>
         </nav>
@@ -190,6 +244,29 @@ function App() {
           ))}
         </section>
 
+        <section className="about-section" id="about">
+          <article className="about-story-card">
+            <p className="eyebrow">About us</p>
+            <h2>Compassion organized into practical community action.</h2>
+            <p>
+              InspireHope Foundation exists to connect generosity, service, and support
+              in ways that are easier to access and more meaningful to experience. We
+              are building a platform where donors, volunteers, beneficiaries, and
+              administrators can work together around one shared mission.
+            </p>
+          </article>
+
+          <article className="about-story-card about-story-card-light">
+            <p className="eyebrow">Why we exist</p>
+            <h2>No one should be left on the margins.</h2>
+            <p>
+              Our work is rooted in the belief that belonging changes lives. By
+              combining outreach, assistance, and digital coordination, the foundation
+              helps communities respond with more speed, care, and clarity.
+            </p>
+          </article>
+        </section>
+
         <section className="content-grid" id="programs">
           <div className="section-heading">
             <p className="eyebrow">Platform experience</p>
@@ -206,6 +283,22 @@ function App() {
               <article key={area.title} className="feature-card">
                 <h3>{area.title}</h3>
                 <p>{area.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="values-section">
+          <div className="section-heading">
+            <p className="eyebrow">Core values</p>
+            <h2>Principles that shape every decision and every interaction.</h2>
+          </div>
+
+          <div className="values-grid">
+            {values.map((value) => (
+              <article key={value.title} className="value-card">
+                <h3>{value.title}</h3>
+                <p>{value.text}</p>
               </article>
             ))}
           </div>
@@ -259,6 +352,22 @@ function App() {
           </div>
         </section>
 
+        <section className="stories-section">
+          <div className="section-heading">
+            <p className="eyebrow">Impact stories</p>
+            <h2>Voices that reflect the trust and care behind the work.</h2>
+          </div>
+
+          <div className="stories-grid">
+            {stories.map((story) => (
+              <article key={story.name} className="story-card">
+                <p className="story-quote">{story.text}</p>
+                <strong>{story.name}</strong>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="events-section" id="events">
           <div className="section-heading">
             <p className="eyebrow">Upcoming engagement</p>
@@ -272,6 +381,22 @@ function App() {
                 <h3>{event.title}</h3>
                 <p>{event.text}</p>
                 <a href="#join">Register interest</a>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="faq-section" id="faq">
+          <div className="section-heading">
+            <p className="eyebrow">Frequently asked questions</p>
+            <h2>Helpful answers for supporters, volunteers, and beneficiaries.</h2>
+          </div>
+
+          <div className="faq-list">
+            {faqs.map((faq) => (
+              <article key={faq.question} className="faq-card">
+                <h3>{faq.question}</h3>
+                <p>{faq.answer}</p>
               </article>
             ))}
           </div>
@@ -297,6 +422,28 @@ function App() {
             </a>
           </div>
         </section>
+
+        <section className="contact-section">
+          <div className="section-heading">
+            <p className="eyebrow">Contact</p>
+            <h2>Reach out to partner, volunteer, donate, or learn more.</h2>
+          </div>
+
+          <div className="contact-grid">
+            <article className="contact-card">
+              <p className="contact-label">Email</p>
+              <strong>hello@inspirehopefoundation.org</strong>
+            </article>
+            <article className="contact-card">
+              <p className="contact-label">Phone</p>
+              <strong>+233 20 000 0000</strong>
+            </article>
+            <article className="contact-card">
+              <p className="contact-label">Location</p>
+              <strong>Accra, Ghana</strong>
+            </article>
+          </div>
+        </section>
       </main>
 
       <footer className="footer">
@@ -306,9 +453,11 @@ function App() {
         </div>
 
         <div className="footer-links">
+          <a href="#about">About</a>
           <a href="#impact">Impact</a>
           <a href="#programs">Programs</a>
           <a href="#members">Members</a>
+          <a href="#faq">FAQ</a>
           <a href="#events">Events</a>
           <a href="#join">Contact</a>
         </div>
