@@ -176,11 +176,11 @@ function App() {
   useEffect(() => {
     const closeTimer = window.setTimeout(() => {
       setIsWelcomeClosing(true)
-    }, 2600)
+    }, 6200)
 
     const hideTimer = window.setTimeout(() => {
       setIsWelcomeVisible(false)
-    }, 3400)
+    }, 7000)
 
     return () => {
       window.clearTimeout(closeTimer)
