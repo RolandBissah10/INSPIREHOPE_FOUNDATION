@@ -1,6 +1,6 @@
-# ThriveTogether Foundation Frontend
+# InspireHope Foundation Frontend
 
-Modern React frontend for the ThriveTogether Foundation platform.
+Modern React frontend for the InspireHope Foundation platform and landing page.
 
 ## Mission
 
@@ -15,6 +15,16 @@ Envisioning a world where everyone belongs and no one is left out.
 - React
 - Vite
 - CSS
+
+## Current Status
+
+Implemented so far:
+
+- Responsive single-page landing experience
+- Sticky navigation bar
+- Mobile hamburger menu with slide-down navigation
+- Improved mobile spacing and nav alignment
+- Netlify deployment support with SPA redirects
 
 ## Run Locally
 
