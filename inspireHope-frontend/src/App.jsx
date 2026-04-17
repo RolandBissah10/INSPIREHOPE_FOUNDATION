@@ -146,13 +146,13 @@ const members = [
   },
   {
     name: 'Francis Roland Bissah',
-    role: 'Donor Relations Officer',
+    role: 'Just an IT guy...',
     detail:
       'Builds trust with supporters by coordinating campaigns, stewardship, and transparent communication around impact.',
   },
   {
     name: 'Henry Amankwah Famiyeh',
-    role: 'Communications and Advocacy Lead',
+    role: 'Media Team Lead',
     detail:
       'Shapes the foundation voice, shares impact stories, and helps the wider community stay informed and engaged.',
   },
