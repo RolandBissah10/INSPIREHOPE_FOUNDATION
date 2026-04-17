@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import heroImg from './assets/hero.png'
 import './App.css'
 
-const impactStats = [
-  { value: '18K+', label: 'Lives reached through inclusive outreach' },
-  { value: '320+', label: 'Volunteers mobilized across programs' },
-  { value: '42', label: 'Community events delivered last year' },
-]
+const contactEndpoint = import.meta.env.VITE_CONTACT_FORM_ENDPOINT
+const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY
+const namePattern = /^[A-Za-z][A-Za-z\s'.-]{1,79}$/
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+const subjectPattern = /^[A-Za-z0-9][A-Za-z0-9\s',.&()!?-]{4,119}$/
+const messagePattern = /^[\s\S]{20,1200}$/
+const donationAmounts = [20, 50, 100, 250]
 
 const focusAreas = [
   {
@@ -160,18 +162,34 @@ const members = [
 
 const navLinks = [
   { href: '#about', label: 'About' },
-  { href: '#impact', label: 'Impact' },
   { href: '#programs', label: 'Programs' },
   { href: '#members', label: 'Members' },
   { href: '#faq', label: 'FAQ' },
   { href: '#events', label: 'Events' },
-  { href: '#join', label: 'Get Involved' },
+  { href: '#contact', label: 'Contact' },
 ]
 
 function App() {
   const [isNavOpen, setIsNavOpen] = useState(false)
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(true)
   const [isWelcomeClosing, setIsWelcomeClosing] = useState(false)
+  const [donationForm, setDonationForm] = useState({
+    name: '',
+    email: '',
+    amount: '50',
+  })
+  const [donationStatus, setDonationStatus] = useState({ type: '', message: '' })
+  const [donationError, setDonationError] = useState('')
+  const [isDonationLoading, setIsDonationLoading] = useState(false)
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  })
+  const [contactStatus, setContactStatus] = useState({ type: '', message: '' })
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false)
+  const [contactErrors, setContactErrors] = useState({})
 
   useEffect(() => {
     const closeTimer = window.setTimeout(() => {
@@ -194,6 +212,254 @@ function App() {
 
   const handleNavLinkClick = () => {
     setIsNavOpen(false)
+  }
+
+  const handleDonationChange = (event) => {
+    const { name, value } = event.target
+
+    setDonationForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+    }))
+
+    if (donationError) {
+      setDonationError('')
+    }
+
+    if (donationStatus.message) {
+      setDonationStatus({ type: '', message: '' })
+    }
+  }
+
+  const handleDonationAmountSelect = (amount) => {
+    setDonationForm((currentForm) => ({
+      ...currentForm,
+      amount: String(amount),
+    }))
+
+    if (donationError) {
+      setDonationError('')
+    }
+  }
+
+  const handleDonateSubmit = (event) => {
+    event.preventDefault()
+
+    const trimmedForm = {
+      name: donationForm.name.trim(),
+      email: donationForm.email.trim(),
+      amount: donationForm.amount.trim(),
+    }
+    const parsedAmount = Number(trimmedForm.amount)
+
+    if (!namePattern.test(trimmedForm.name)) {
+      setDonationError('Enter a valid full name before continuing to payment.')
+      return
+    }
+
+    if (!emailPattern.test(trimmedForm.email)) {
+      setDonationError('Enter a valid email address before continuing to payment.')
+      return
+    }
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount < 1) {
+      setDonationError('Enter a donation amount greater than 0.')
+      return
+    }
+
+    if (!paystackPublicKey) {
+      setDonationError(
+        'Donation checkout is not configured yet. Add VITE_PAYSTACK_PUBLIC_KEY to your frontend .env file.',
+      )
+      return
+    }
+
+    const Paystack =
+      typeof window !== 'undefined'
+        ? window.Paystack || window.PaystackPop
+        : null
+
+    if (!Paystack) {
+      setDonationError('Paystack checkout could not load. Please refresh the page and try again.')
+      return
+    }
+
+    const reference = `IHF-${Date.now()}`
+    const popup = new Paystack()
+
+    setIsDonationLoading(true)
+    setDonationStatus({ type: '', message: '' })
+
+    popup.newTransaction({
+      key: paystackPublicKey,
+      email: trimmedForm.email,
+      amount: Math.round(parsedAmount * 100),
+      currency: 'GHS',
+      reference,
+      firstName: trimmedForm.name.split(' ')[0],
+      lastName: trimmedForm.name.split(' ').slice(1).join(' '),
+      metadata: {
+        custom_fields: [
+          {
+            display_name: 'Donor Name',
+            variable_name: 'donor_name',
+            value: trimmedForm.name,
+          },
+        ],
+      },
+      onLoad: () => {
+        setIsDonationLoading(false)
+      },
+      onSuccess: (transaction) => {
+        setIsDonationLoading(false)
+        setDonationStatus({
+          type: 'success',
+          message: `Thank you for your contribution. Payment reference: ${transaction.reference}.`,
+        })
+        setDonationForm((currentForm) => ({
+          ...currentForm,
+          amount: '50',
+        }))
+      },
+      onCancel: () => {
+        setIsDonationLoading(false)
+        setDonationStatus({
+          type: 'info',
+          message: 'Donation checkout was cancelled before payment was completed.',
+        })
+      },
+      onError: (error) => {
+        setIsDonationLoading(false)
+        setDonationStatus({
+          type: 'error',
+          message: error?.message || 'We could not start the Paystack checkout. Please try again.',
+        })
+      },
+    })
+  }
+
+  const handleContactChange = (event) => {
+    const { name, value } = event.target
+
+    setContactForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+    }))
+
+    setContactErrors((currentErrors) => {
+      if (!currentErrors[name]) {
+        return currentErrors
+      }
+
+      const nextErrors = { ...currentErrors }
+      delete nextErrors[name]
+      return nextErrors
+    })
+
+    if (contactStatus.message) {
+      setContactStatus({ type: '', message: '' })
+    }
+  }
+
+  const validateContactForm = (formValues) => {
+    const errors = {}
+
+    if (!namePattern.test(formValues.name)) {
+      errors.name = 'Enter a valid full name using letters, spaces, apostrophes, or hyphens.'
+    }
+
+    if (!emailPattern.test(formValues.email)) {
+      errors.email = 'Enter a valid email address in the format name@example.com.'
+    }
+
+    if (!subjectPattern.test(formValues.subject)) {
+      errors.subject = 'Subject must be 5 to 120 characters and start with a letter or number.'
+    }
+
+    if (!messagePattern.test(formValues.message)) {
+      errors.message = 'Message must be between 20 and 1200 characters.'
+    }
+
+    return errors
+  }
+
+  const handleContactSubmit = async (event) => {
+    event.preventDefault()
+
+    const trimmedForm = {
+      name: contactForm.name.trim(),
+      email: contactForm.email.trim(),
+      subject: contactForm.subject.trim(),
+      message: contactForm.message.trim(),
+    }
+
+    const validationErrors = validateContactForm(trimmedForm)
+
+    if (Object.keys(validationErrors).length > 0) {
+      setContactErrors(validationErrors)
+      setContactStatus({
+        type: 'error',
+        message: 'Please fix the highlighted fields and try again.',
+      })
+      return
+    }
+
+    setContactErrors({})
+
+    if (!contactEndpoint) {
+      setContactStatus({
+        type: 'error',
+        message:
+          'Contact form is not configured yet. Add VITE_CONTACT_FORM_ENDPOINT to your frontend .env file to enable sending.',
+      })
+      return
+    }
+
+    setIsSubmittingContact(true)
+
+    try {
+      const response = await fetch(contactEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(trimmedForm),
+      })
+
+      if (!response.ok) {
+        let errorMessage = 'Unable to submit form'
+
+        try {
+          const errorData = await response.json()
+          if (errorData?.errors?.length) {
+            errorMessage = errorData.errors.map((item) => item.message).join(' ')
+          }
+        } catch {
+          // Fall back to the default message when the response is not JSON.
+        }
+
+        throw new Error(errorMessage)
+      }
+
+      setContactForm({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      })
+      setContactStatus({
+        type: 'success',
+        message: 'Your message has been sent successfully. We will get back to you soon.',
+      })
+    } catch (error) {
+      setContactStatus({
+        type: 'error',
+        message: `${error.message}. If the issue continues, please email rolandbissah10@gmail.com directly.`,
+      })
+    } finally {
+      setIsSubmittingContact(false)
+    }
   }
 
   return (
@@ -251,8 +517,8 @@ function App() {
             ))}
           </nav>
 
-          <a className="nav-cta" href="#join">
-            Support a Cause
+          <a className="nav-cta" href="#donate">
+            Donate
           </a>
         </header>
 
@@ -273,7 +539,7 @@ function App() {
               </p>
 
               <div className="hero-actions">
-                <a className="primary-button" href="#join">
+                <a className="primary-button" href="#contact">
                   Become a volunteer
                 </a>
                 <a className="secondary-button" href="#programs">
@@ -305,15 +571,6 @@ function App() {
                 <h2>Envisioning a world where everyone belongs and no one is left out.</h2>
               </div>
             </div>
-          </section>
-
-          <section className="impact-strip" id="impact">
-            {impactStats.map((stat) => (
-              <article key={stat.label} className="stat-card">
-                <strong>{stat.value}</strong>
-                <span>{stat.label}</span>
-              </article>
-            ))}
           </section>
 
           <section className="about-section" id="about">
@@ -452,9 +709,107 @@ function App() {
                   <p className="event-meta">{event.meta}</p>
                   <h3>{event.title}</h3>
                   <p>{event.text}</p>
-                  <a href="#join">Register interest</a>
+                  <a href="#contact">Register interest</a>
                 </article>
               ))}
+            </div>
+          </section>
+
+          <section className="donation-section" id="donate">
+            <div className="section-heading">
+              <p className="eyebrow">Donate</p>
+              <h2>Contribute securely and help the mission move faster.</h2>
+              <p>
+                Choose an amount or enter your own contribution, then complete payment
+                through Paystack.
+              </p>
+            </div>
+
+            <div className="donation-layout">
+              <article className="donation-story-card">
+                <p className="eyebrow">Why it matters</p>
+                <h3>Your support helps InspireHope respond with dignity, speed, and care.</h3>
+                <p>
+                  Contributions can help fund community outreach, urgent family support,
+                  volunteer coordination, and practical tools that make assistance easier to
+                  deliver.
+                </p>
+                <ul className="donation-list">
+                  <li>Support emergency assistance for families in need</li>
+                  <li>Back community events and volunteer-led programs</li>
+                  <li>Strengthen transparent, digital-first coordination efforts</li>
+                </ul>
+              </article>
+
+              <form className="donation-form-card" onSubmit={handleDonateSubmit}>
+                <div className="donation-amount-grid" aria-label="Suggested donation amounts">
+                  {donationAmounts.map((amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      className={`donation-chip ${
+                        donationForm.amount === String(amount) ? 'donation-chip-active' : ''
+                      }`}
+                      onClick={() => handleDonationAmountSelect(amount)}
+                    >
+                      GHS {amount}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="contact-form-grid">
+                  <label className="contact-field">
+                    <span>Full name</span>
+                    <input
+                      type="text"
+                      name="name"
+                      value={donationForm.name}
+                      onChange={handleDonationChange}
+                      placeholder="Your full name"
+                      required
+                    />
+                  </label>
+
+                  <label className="contact-field">
+                    <span>Email</span>
+                    <input
+                      type="email"
+                      name="email"
+                      value={donationForm.email}
+                      onChange={handleDonationChange}
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </label>
+
+                  <label className="contact-field contact-field-full">
+                    <span>Amount in GHS</span>
+                    <input
+                      type="number"
+                      name="amount"
+                      value={donationForm.amount}
+                      onChange={handleDonationChange}
+                      min="1"
+                      step="0.01"
+                      placeholder="Enter amount"
+                      required
+                    />
+                  </label>
+                </div>
+
+                <div className="contact-form-actions">
+                  <button className="primary-button contact-submit" type="submit">
+                    {isDonationLoading ? 'Opening Paystack...' : 'Proceed to Payment'}
+                  </button>
+                </div>
+
+                {donationError ? <p className="contact-status contact-status-error">{donationError}</p> : null}
+                {donationStatus.message ? (
+                  <p className={`contact-status contact-status-${donationStatus.type}`}>
+                    {donationStatus.message}
+                  </p>
+                ) : null}
+              </form>
             </div>
           </section>
 
@@ -474,31 +829,123 @@ function App() {
             </div>
           </section>
 
-          <section className="join-banner" id="join">
-            <div>
-              <p className="eyebrow">Get involved</p>
-              <h2>Bring your generosity, your time, or your voice.</h2>
-              <p>
-                Join InspireHope Foundation and help create a digital-first support
-                system that turns compassion into coordinated action for people who
-                deserve both belonging and the opportunity to thrive.
-              </p>
-            </div>
-
-            <div className="join-actions">
-              <a className="primary-button" href="mailto:hello@inspirehopefoundation.org">
-                Contact the foundation
-              </a>
-              <a className="secondary-button secondary-button-light" href="#home">
-                Return to top
-              </a>
-            </div>
-          </section>
-
-          <section className="contact-section">
+          <section className="contact-section" id="contact">
             <div className="section-heading">
               <p className="eyebrow">Contact</p>
               <h2>Reach out to partner, volunteer, donate, or learn more.</h2>
+              <p>
+                Use the form below to send your message directly from the site and we will
+                get back to you as soon as we can.
+              </p>
+            </div>
+
+            <div className="contact-layout">
+              <form
+                className="contact-form-card"
+                onSubmit={handleContactSubmit}
+              >
+                {contactStatus.type === 'success' ? (
+                  <div className="contact-success-panel" role="status" aria-live="polite">
+                    <p className="contact-success-kicker">Message sent</p>
+                    <h3>Thank you for reaching out.</h3>
+                    <p>
+                      Your message has been submitted successfully. Our team will review it
+                      and get back to you soon.
+                    </p>
+                  </div>
+                ) : null}
+
+                <div className="contact-form-grid">
+                  <label className="contact-field">
+                    <span>Name</span>
+                    <input
+                      type="text"
+                      name="name"
+                      value={contactForm.name}
+                      onChange={handleContactChange}
+                      placeholder="Your full name"
+                      pattern={namePattern.source}
+                      minLength="2"
+                      maxLength="80"
+                      aria-invalid={contactErrors.name ? 'true' : 'false'}
+                      required
+                    />
+                    {contactErrors.name ? (
+                      <small className="contact-field-error">{contactErrors.name}</small>
+                    ) : null}
+                  </label>
+
+                  <label className="contact-field">
+                    <span>Email</span>
+                    <input
+                      type="email"
+                      name="email"
+                      value={contactForm.email}
+                      onChange={handleContactChange}
+                      placeholder="you@example.com"
+                      pattern={emailPattern.source}
+                      aria-invalid={contactErrors.email ? 'true' : 'false'}
+                      required
+                    />
+                    {contactErrors.email ? (
+                      <small className="contact-field-error">{contactErrors.email}</small>
+                    ) : null}
+                  </label>
+
+                  <label className="contact-field contact-field-full">
+                    <span>Subject</span>
+                    <input
+                      type="text"
+                      name="subject"
+                      value={contactForm.subject}
+                      onChange={handleContactChange}
+                      placeholder="How can we help?"
+                      pattern={subjectPattern.source}
+                      minLength="5"
+                      maxLength="120"
+                      aria-invalid={contactErrors.subject ? 'true' : 'false'}
+                      required
+                    />
+                    {contactErrors.subject ? (
+                      <small className="contact-field-error">{contactErrors.subject}</small>
+                    ) : null}
+                  </label>
+
+                  <label className="contact-field contact-field-full">
+                    <span>Message</span>
+                    <textarea
+                      name="message"
+                      value={contactForm.message}
+                      onChange={handleContactChange}
+                      placeholder="Tell us how you would like to connect with InspireHope Foundation."
+                      rows="6"
+                      minLength="20"
+                      maxLength="1200"
+                      aria-invalid={contactErrors.message ? 'true' : 'false'}
+                      required
+                    />
+                    {contactErrors.message ? (
+                      <small className="contact-field-error">{contactErrors.message}</small>
+                    ) : null}
+                  </label>
+                </div>
+
+                <div className="contact-form-actions">
+                  <button
+                    className="primary-button contact-submit"
+                    type="submit"
+                    disabled={isSubmittingContact}
+                  >
+                    {isSubmittingContact ? 'Sending...' : 'Send message'}
+                  </button>
+                </div>
+
+                {contactStatus.message && contactStatus.type !== 'success' ? (
+                  <p className={`contact-status contact-status-${contactStatus.type}`}>
+                    {contactStatus.message}
+                  </p>
+                ) : null}
+              </form>
             </div>
 
             <div className="contact-grid">
@@ -526,12 +973,11 @@ function App() {
 
           <div className="footer-links">
             <a href="#about">About</a>
-            <a href="#impact">Impact</a>
             <a href="#programs">Programs</a>
             <a href="#members">Members</a>
             <a href="#faq">FAQ</a>
             <a href="#events">Events</a>
-            <a href="#join">Contact</a>
+            <a href="#contact">Contact</a>
           </div>
         </footer>
       </div>
