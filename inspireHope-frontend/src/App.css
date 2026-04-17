@@ -39,7 +39,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 1.5rem 0;
+  padding: 1.5rem 1rem;
   background:
     linear-gradient(180deg, rgba(250, 247, 240, 0.96), rgba(245, 239, 228, 0.92));
   backdrop-filter: blur(10px);
@@ -93,6 +93,38 @@
   display: inline-flex;
   align-items: center;
   gap: 1.5rem;
+}
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid rgba(21, 67, 61, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 20px rgba(17, 55, 50, 0.08);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.nav-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(21, 67, 61, 0.22);
+  box-shadow: 0 10px 24px rgba(17, 55, 50, 0.12);
+}
+
+.nav-toggle span {
+  display: block;
+  width: 1.15rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--ink-900);
+}
+
+.nav-toggle span + span {
+  margin-top: 0.24rem;
 }
 
 .nav a,
@@ -288,7 +320,7 @@
 }
 
 .hero-card-primary {
-  top: 1.5rem;
+  top: 0.75rem;
   left: -1rem;
   background: rgba(246, 250, 248, 0.9);
 }
@@ -711,11 +743,17 @@
 }
 
 @media (max-width: 840px) {
-  .topbar,
   .join-banner,
   .footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 1rem;
+    gap: 1rem;
   }
 
   .nav {
@@ -733,11 +771,80 @@
 
 @media (max-width: 640px) {
   .topbar {
-    padding-top: 1rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    top: 0;
+    padding: 0.85rem 1rem;
+    align-items: center;
+  }
+
+  .brand {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .brand strong {
+    font-size: 1rem;
+  }
+
+  .brand small {
+    font-size: 0.64rem;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    flex-direction: column;
+    flex: 0 0 auto;
   }
 
   .nav {
-    display: none;
+    order: 3;
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin-top: 0;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    border-radius: 1.2rem;
+    background: rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(21, 67, 61, 0.08);
+    box-shadow: 0 14px 34px rgba(17, 55, 50, 0.08);
+    transition: max-height 240ms ease, opacity 180ms ease, margin-top 180ms ease,
+      padding 180ms ease;
+  }
+
+  .nav.nav-open {
+    max-height: 30rem;
+    opacity: 1;
+    margin-top: 1rem;
+    padding: 1rem;
+  }
+
+  .nav a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.95rem;
+    text-align: center;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(21, 67, 61, 0.1);
+  }
+
+  .nav a:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .nav-cta {
+    order: 4;
+    width: 100%;
+    padding: 0.8rem 1.1rem;
   }
 
   .hero-section,
@@ -762,7 +869,11 @@
   .hero-card {
     position: static;
     max-width: none;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
+  }
+
+  .hero-card-primary {
+    margin-bottom: 0.75rem;
   }
 
   .hero-visual {

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import heroImg from './assets/hero.png'
 import './App.css'
 
@@ -157,7 +158,27 @@ const members = [
   },
 ]
 
+const navLinks = [
+  { href: '#about', label: 'About' },
+  { href: '#impact', label: 'Impact' },
+  { href: '#programs', label: 'Programs' },
+  { href: '#members', label: 'Members' },
+  { href: '#faq', label: 'FAQ' },
+  { href: '#events', label: 'Events' },
+  { href: '#join', label: 'Get Involved' },
+]
+
 function App() {
+  const [isNavOpen, setIsNavOpen] = useState(false)
+
+  const handleNavToggle = () => {
+    setIsNavOpen((open) => !open)
+  }
+
+  const handleNavLinkClick = () => {
+    setIsNavOpen(false)
+  }
+
   return (
     <div className="page-shell">
       <header className="topbar">
@@ -169,14 +190,25 @@ function App() {
           </span>
         </a>
 
-        <nav className="nav">
-          <a href="#about">About</a>
-          <a href="#impact">Impact</a>
-          <a href="#programs">Programs</a>
-          <a href="#members">Members</a>
-          <a href="#faq">FAQ</a>
-          <a href="#events">Events</a>
-          <a href="#join">Get Involved</a>
+        <button
+          className="nav-toggle"
+          type="button"
+          aria-expanded={isNavOpen}
+          aria-controls="site-navigation"
+          aria-label={isNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          onClick={handleNavToggle}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <nav className={`nav ${isNavOpen ? 'nav-open' : ''}`} id="site-navigation">
+          {navLinks.map((link) => (
+            <a key={link.href} href={link.href} onClick={handleNavLinkClick}>
+              {link.label}
+            </a>
+          ))}
         </nav>
 
         <a className="nav-cta" href="#join">
