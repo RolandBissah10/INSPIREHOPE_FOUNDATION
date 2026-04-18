@@ -775,12 +775,34 @@
   background: linear-gradient(135deg, rgba(20, 142, 123, 0.1), rgba(255, 255, 255, 0.95));
 }
 
+.contact-status-panel {
+  margin-bottom: 1.25rem;
+  padding: 1.2rem 1.25rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(15, 122, 107, 0.16);
+  background: linear-gradient(135deg, rgba(20, 142, 123, 0.1), rgba(255, 255, 255, 0.95));
+}
+
+.contact-status-panel.contact-status-error {
+  border-color: rgba(181, 71, 47, 0.16);
+  background: linear-gradient(135deg, rgba(181, 71, 47, 0.1), rgba(255, 255, 255, 0.95));
+}
+
 .contact-success-panel h3 {
   margin: 0;
   color: var(--ink-950);
 }
 
 .contact-success-panel p {
+  margin: 0.45rem 0 0;
+}
+
+.contact-status-panel h3 {
+  margin: 0;
+  color: var(--ink-950);
+}
+
+.contact-status-panel p {
   margin: 0.45rem 0 0;
 }
 

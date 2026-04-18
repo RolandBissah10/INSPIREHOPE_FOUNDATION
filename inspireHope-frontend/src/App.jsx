@@ -206,6 +206,15 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (contactStatus.message) {
+      const timer = setTimeout(() => {
+        setContactStatus({ type: '', message: '' })
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [contactStatus.message])
+
   const handleNavToggle = () => {
     setIsNavOpen((open) => !open)
   }
@@ -844,14 +853,20 @@ function App() {
                 className="contact-form-card"
                 onSubmit={handleContactSubmit}
               >
-                {contactStatus.type === 'success' ? (
-                  <div className="contact-success-panel" role="status" aria-live="polite">
-                    <p className="contact-success-kicker">Message sent</p>
-                    <h3>Thank you for reaching out.</h3>
-                    <p>
-                      Your message has been submitted successfully. Our team will review it
-                      and get back to you soon.
-                    </p>
+                {contactStatus.message ? (
+                  <div className={`contact-status-panel contact-status-${contactStatus.type}`} role="status" aria-live="polite">
+                    {contactStatus.type === 'success' ? (
+                      <>
+                        <p className="contact-success-kicker">Message sent</p>
+                        <h3>Thank you for reaching out.</h3>
+                        <p>
+                          Your message has been submitted successfully. Our team will review it
+                          and get back to you soon.
+                        </p>
+                      </>
+                    ) : (
+                      <p>{contactStatus.message}</p>
+                    )}
                   </div>
                 ) : null}
 
@@ -939,12 +954,6 @@ function App() {
                     {isSubmittingContact ? 'Sending...' : 'Send message'}
                   </button>
                 </div>
-
-                {contactStatus.message && contactStatus.type !== 'success' ? (
-                  <p className={`contact-status contact-status-${contactStatus.type}`}>
-                    {contactStatus.message}
-                  </p>
-                ) : null}
               </form>
             </div>
 
