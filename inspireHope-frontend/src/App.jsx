@@ -37,6 +37,11 @@ const initiatives = [
   'Transparent donation experiences for supporters',
 ]
 
+const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY
+const namePattern = /^[A-Za-z][A-Za-z\s'.-]{1,79}$/
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+const donationAmounts = [20, 50, 100, 250]
+
 const upcomingMoments = [
   {
     title: 'Community Health Day',
@@ -172,6 +177,14 @@ function App() {
   const [isNavOpen, setIsNavOpen] = useState(false)
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(true)
   const [isWelcomeClosing, setIsWelcomeClosing] = useState(false)
+  const [donationForm, setDonationForm] = useState({
+    name: '',
+    email: '',
+    amount: '50',
+  })
+  const [donationStatus, setDonationStatus] = useState({ type: '', message: '' })
+  const [donationError, setDonationError] = useState('')
+  const [isDonationLoading, setIsDonationLoading] = useState(false)
 
   useEffect(() => {
     const closeTimer = window.setTimeout(() => {
@@ -188,12 +201,151 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!donationStatus.message) {
+      return undefined
+    }
+
+    const timer = window.setTimeout(() => {
+      setDonationStatus({ type: '', message: '' })
+    }, 5000)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [donationStatus.message])
+
   const handleNavToggle = () => {
     setIsNavOpen((open) => !open)
   }
 
   const handleNavLinkClick = () => {
     setIsNavOpen(false)
+  }
+
+  const handleDonationInputChange = (event) => {
+    const { name, value } = event.target
+    setDonationForm((current) => ({ ...current, [name]: value }))
+
+    if (donationError) {
+      setDonationError('')
+    }
+    if (donationStatus.message) {
+      setDonationStatus({ type: '', message: '' })
+    }
+  }
+
+  const handleDonationAmountSelect = (amount) => {
+    setDonationForm((current) => ({ ...current, amount: String(amount) }))
+
+    if (donationError) {
+      setDonationError('')
+    }
+    if (donationStatus.message) {
+      setDonationStatus({ type: '', message: '' })
+    }
+  }
+
+  const handleDonationSubmit = async (event) => {
+    event.preventDefault()
+
+    const trimmedForm = {
+      name: donationForm.name.trim(),
+      email: donationForm.email.trim(),
+      amount: donationForm.amount.trim(),
+    }
+    const amountValue = Number(trimmedForm.amount)
+
+    if (!namePattern.test(trimmedForm.name)) {
+      setDonationError('Enter a valid full name before continuing to payment.')
+      return
+    }
+
+    if (!emailPattern.test(trimmedForm.email)) {
+      setDonationError('Enter a valid email address before continuing to payment.')
+      return
+    }
+
+    if (!Number.isFinite(amountValue) || amountValue <= 0) {
+      setDonationError('Enter a donation amount greater than 0.')
+      return
+    }
+
+    if (!paystackPublicKey) {
+      setDonationStatus({
+        type: 'error',
+        message:
+          'Donation checkout is not configured yet. Add VITE_PAYSTACK_PUBLIC_KEY to your frontend .env file.',
+      })
+      return
+    }
+
+    const Paystack = typeof window !== 'undefined' ? window.Paystack || window.PaystackPop : null
+
+    if (!Paystack) {
+      setDonationError('Paystack checkout could not load. Please refresh the page and try again.')
+      return
+    }
+
+    setDonationError('')
+    setDonationStatus({ type: '', message: '' })
+    setIsDonationLoading(true)
+
+    try {
+      const reference = `IHF-${Date.now()}`
+      const transaction = new Paystack()
+
+      transaction.newTransaction({
+        key: paystackPublicKey,
+        email: trimmedForm.email,
+        amount: Math.round(amountValue * 100),
+        currency: 'GHS',
+        reference,
+        firstName: trimmedForm.name.split(' ')[0] || trimmedForm.name,
+        lastName: trimmedForm.name.split(' ').slice(1).join(' '),
+        metadata: {
+          custom_fields: [
+            {
+              display_name: 'Donor Name',
+              variable_name: 'donor_name',
+              value: trimmedForm.name,
+            },
+          ],
+        },
+        onLoad: () => {
+          setIsDonationLoading(false)
+        },
+        onSuccess: (result) => {
+          setIsDonationLoading(false)
+          setDonationStatus({
+            type: 'success',
+            message: `Thank you for your contribution. Payment reference: ${result.reference}.`,
+          })
+          setDonationForm((current) => ({ ...current, amount: '50' }))
+        },
+        onCancel: () => {
+          setIsDonationLoading(false)
+          setDonationStatus({
+            type: 'info',
+            message: 'Donation checkout was cancelled before payment was completed.',
+          })
+        },
+        onError: (error) => {
+          setIsDonationLoading(false)
+          setDonationStatus({
+            type: 'error',
+            message:
+              error?.message || 'We could not start the Paystack checkout. Please try again.',
+          })
+        },
+      })
+    } catch (error) {
+      setIsDonationLoading(false)
+      setDonationStatus({
+        type: 'error',
+        message: 'We could not start the Paystack checkout. Please try again.',
+      })
+    }
   }
 
   return (
@@ -455,6 +607,103 @@ function App() {
                   <a href="#join">Register interest</a>
                 </article>
               ))}
+            </div>
+          </section>
+
+          <section className="donation-section" id="donate">
+            <div className="section-heading">
+              <p className="eyebrow">Donate</p>
+              <h2>Contribute securely and help the mission move faster.</h2>
+              <p>
+                Choose an amount or enter your own contribution, then complete payment through Paystack.
+              </p>
+            </div>
+
+            <div className="donation-layout">
+              <article className="donation-story-card">
+                <p className="eyebrow">Why it matters</p>
+                <h3>Your support helps InspireHope respond with dignity, speed, and care.</h3>
+                <p>
+                  Contributions can help fund community outreach, urgent family support,
+                  volunteer coordination, and practical tools that make assistance easier to deliver.
+                </p>
+                <ul className="donation-list">
+                  <li>Support emergency assistance for families in need</li>
+                  <li>Back community events and volunteer-led programs</li>
+                  <li>Strengthen transparent, digital-first coordination efforts</li>
+                </ul>
+              </article>
+
+              <form className="donation-form-card" onSubmit={handleDonationSubmit}>
+                <div className="donation-amount-grid" aria-label="Suggested donation amounts">
+                  {donationAmounts.map((amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      className={`donation-chip ${donationForm.amount === String(amount) ? 'donation-chip-active' : ''}`}
+                      onClick={() => handleDonationAmountSelect(amount)}
+                    >
+                      GHS {amount}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="contact-form-grid">
+                  <label className="contact-field">
+                    <span>Full name</span>
+                    <input
+                      type="text"
+                      name="name"
+                      value={donationForm.name}
+                      onChange={handleDonationInputChange}
+                      placeholder="Your full name"
+                      required
+                    />
+                  </label>
+
+                  <label className="contact-field">
+                    <span>Email</span>
+                    <input
+                      type="email"
+                      name="email"
+                      value={donationForm.email}
+                      onChange={handleDonationInputChange}
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </label>
+
+                  <label className="contact-field contact-field-full">
+                    <span>Amount in GHS</span>
+                    <input
+                      type="number"
+                      name="amount"
+                      value={donationForm.amount}
+                      onChange={handleDonationInputChange}
+                      min="1"
+                      step="0.01"
+                      placeholder="Enter amount"
+                      required
+                    />
+                  </label>
+                </div>
+
+                <div className="contact-form-actions">
+                  <button className="primary-button contact-submit" type="submit" disabled={isDonationLoading}>
+                    {isDonationLoading ? 'Opening Paystack...' : 'Proceed to Payment'}
+                  </button>
+                </div>
+
+                {donationError ? (
+                  <p className="contact-status contact-status-error">{donationError}</p>
+                ) : null}
+
+                {donationStatus.message ? (
+                  <p className={`contact-status contact-status-${donationStatus.type}`}>
+                    {donationStatus.message}
+                  </p>
+                ) : null}
+              </form>
             </div>
           </section>
 
