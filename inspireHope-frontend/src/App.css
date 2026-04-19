@@ -517,100 +517,10 @@
 .members-grid,
 .values-grid,
 .stories-grid,
-.contact-grid {
+.contact-grid,
+.contact-layout {
   display: grid;
   gap: 1.25rem;
-}
-
-.donation-section {
-  padding: 1rem 0 4.5rem;
-}
-
-.donation-layout {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-.donation-story-card,
-.donation-form-card {
-  border-radius: 1.6rem;
-  border: 1px solid var(--line-soft);
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 10px 22px rgba(17, 55, 50, 0.05);
-  padding: 1.7rem;
-}
-
-.donation-story-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.donation-story-card h3 {
-  margin: 0;
-  color: var(--ink-950);
-}
-
-.donation-list {
-  list-style: none;
-  margin: 1rem 0 0;
-  padding: 0;
-  display: grid;
-  gap: 0.85rem;
-}
-
-.donation-list li {
-  padding-left: 1.25rem;
-  position: relative;
-  color: var(--ink-700);
-}
-
-.donation-list li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.7rem;
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--orange-500), var(--teal-500));
-}
-
-.donation-amount-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.85rem;
-  margin-bottom: 1rem;
-}
-
-.donation-chip {
-  min-height: 3rem;
-  border: 1px solid rgba(21, 67, 61, 0.16);
-  border-radius: 0.95rem;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--ink-900);
-  cursor: pointer;
-  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
-}
-
-.donation-chip:hover,
-.donation-chip:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(21, 67, 61, 0.28);
-}
-
-.donation-chip-active {
-  background: linear-gradient(135deg, var(--orange-500), var(--orange-600));
-  color: white;
-  border-color: transparent;
-}
-
-@media (max-width: 1080px) {
-  .donation-layout {
-    grid-template-columns: 1fr;
-  }
 }
 
 .feature-grid {
@@ -691,6 +601,14 @@
   box-shadow: 0 10px 22px rgba(17, 55, 50, 0.05);
 }
 
+.event-card {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 30%),
+    linear-gradient(135deg, #0d5f56, #0f7a6b 58%, #1f9f82);
+  box-shadow: 0 14px 28px rgba(16, 84, 76, 0.16);
+}
+
 .story-card {
   display: flex;
   flex-direction: column;
@@ -728,6 +646,13 @@
   color: var(--ink-600);
 }
 
+.event-card h3,
+.event-card p,
+.event-card .event-meta,
+.event-card a {
+  color: white;
+}
+
 .about-story-card p,
 .about-story-card-light p {
   color: white;
@@ -738,7 +663,164 @@
 }
 
 .contact-grid {
+  align-content: start;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.25rem;
+}
+
+.contact-layout {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.contact-form-card {
+  width: 100%;
+  padding: 1.7rem;
+  border-radius: 1.6rem;
+  border: 1px solid var(--line-soft);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 10px 22px rgba(17, 55, 50, 0.05);
+}
+
+.contact-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.contact-success-panel {
+  margin-bottom: 1.25rem;
+  padding: 1.2rem 1.25rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(15, 122, 107, 0.16);
+  background: linear-gradient(135deg, rgba(20, 142, 123, 0.1), rgba(255, 255, 255, 0.95));
+}
+
+.contact-status-panel {
+  margin-bottom: 1.25rem;
+  padding: 1.2rem 1.25rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(15, 122, 107, 0.16);
+  background: linear-gradient(135deg, rgba(20, 142, 123, 0.1), rgba(255, 255, 255, 0.95));
+}
+
+.contact-status-panel.contact-status-error {
+  border-color: rgba(181, 71, 47, 0.16);
+  background: linear-gradient(135deg, rgba(181, 71, 47, 0.1), rgba(255, 255, 255, 0.95));
+}
+
+.contact-success-panel h3 {
+  margin: 0;
+  color: var(--ink-950);
+}
+
+.contact-success-panel p {
+  margin: 0.45rem 0 0;
+}
+
+.contact-status-panel h3 {
+  margin: 0;
+  color: var(--ink-950);
+}
+
+.contact-status-panel p {
+  margin: 0.45rem 0 0;
+}
+
+.contact-success-kicker {
+  margin: 0 0 0.35rem !important;
+  color: var(--teal-700);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contact-field span {
+  color: var(--ink-900);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.contact-field-full {
+  grid-column: 1 / -1;
+}
+
+.contact-field input,
+.contact-field textarea {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(21, 67, 61, 0.14);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink-900);
+  font: inherit;
+  resize: vertical;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.contact-field input::placeholder,
+.contact-field textarea::placeholder {
+  color: var(--ink-500);
+}
+
+.contact-field input:focus,
+.contact-field textarea:focus {
+  outline: none;
+  border-color: rgba(15, 122, 107, 0.45);
+  box-shadow: 0 0 0 4px rgba(31, 159, 130, 0.12);
+}
+
+.contact-field input[aria-invalid='true'],
+.contact-field textarea[aria-invalid='true'] {
+  border-color: rgba(181, 71, 47, 0.52);
+  box-shadow: 0 0 0 4px rgba(181, 71, 47, 0.1);
+}
+
+.contact-field-error {
+  color: #b5472f;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.contact-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.contact-submit {
+  border: 0;
+  cursor: pointer;
+}
+
+.contact-submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.contact-status {
+  margin: 1rem 0 0;
+  font-weight: 500;
+}
+
+.contact-status-success {
+  color: var(--teal-700);
+}
+
+.contact-status-error {
+  color: #b5472f;
+}
+
+.contact-status-info {
+  color: var(--ink-700);
 }
 
 .contact-label {
@@ -924,7 +1006,8 @@
   .event-grid,
   .about-section,
   .stories-grid,
-  .contact-grid {
+  .contact-grid,
+  .contact-layout {
     grid-template-columns: 1fr;
   }
 
@@ -982,7 +1065,8 @@
   .impact-strip,
   .feature-grid,
   .members-grid,
-  .values-grid {
+  .values-grid,
+  .contact-form-grid {
     grid-template-columns: 1fr;
   }
 }

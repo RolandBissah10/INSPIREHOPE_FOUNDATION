@@ -35,6 +35,15 @@ npm install
 npm run dev
 ```
 
+To enable the contact form, create `inspireHope-frontend/.env` and add:
+
+```bash
+VITE_CONTACT_FORM_ENDPOINT=https://formspree.io/f/YOUR_FORM_ID
+VITE_PAYSTACK_PUBLIC_KEY=pk_test_your_public_key
+```
+
+You can copy the value from `inspireHope-frontend/.env.example` after creating a Formspree form.
+
 ## Production Build
 
 ```bash

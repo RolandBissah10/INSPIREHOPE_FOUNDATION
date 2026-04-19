@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import heroImg from './assets/hero.png'
 import './App.css'
 
-const impactStats = [
-  { value: '18K+', label: 'Lives reached through inclusive outreach' },
-  { value: '320+', label: 'Volunteers mobilized across programs' },
-  { value: '42', label: 'Community events delivered last year' },
-]
+const contactEndpoint = import.meta.env.VITE_CONTACT_FORM_ENDPOINT
+const namePattern = /^[A-Za-z][A-Za-z\s'.-]{1,79}$/
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+const subjectPattern = /^[A-Za-z0-9][A-Za-z0-9\s',.&()!?-]{4,119}$/
+const messagePattern = /^[\s\S]{20,1200}$/
 
 const focusAreas = [
   {
@@ -36,11 +36,6 @@ const initiatives = [
   'Volunteer registration and event coordination',
   'Transparent donation experiences for supporters',
 ]
-
-const paystackPublicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY
-const namePattern = /^[A-Za-z][A-Za-z\s'.-]{1,79}$/
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
-const donationAmounts = [20, 50, 100, 250]
 
 const upcomingMoments = [
   {
@@ -165,35 +160,35 @@ const members = [
 
 const navLinks = [
   { href: '#about', label: 'About' },
-  { href: '#impact', label: 'Impact' },
   { href: '#programs', label: 'Programs' },
   { href: '#members', label: 'Members' },
   { href: '#faq', label: 'FAQ' },
   { href: '#events', label: 'Events' },
-  { href: '#join', label: 'Get Involved' },
+  { href: '#contact', label: 'Contact' },
 ]
 
 function App() {
   const [isNavOpen, setIsNavOpen] = useState(false)
   const [isWelcomeVisible, setIsWelcomeVisible] = useState(true)
   const [isWelcomeClosing, setIsWelcomeClosing] = useState(false)
-  const [donationForm, setDonationForm] = useState({
+  const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
-    amount: '50',
+    subject: '',
+    message: '',
   })
-  const [donationStatus, setDonationStatus] = useState({ type: '', message: '' })
-  const [donationError, setDonationError] = useState('')
-  const [isDonationLoading, setIsDonationLoading] = useState(false)
+  const [contactStatus, setContactStatus] = useState({ type: '', message: '' })
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false)
+  const [contactErrors, setContactErrors] = useState({})
 
   useEffect(() => {
     const closeTimer = window.setTimeout(() => {
       setIsWelcomeClosing(true)
-    }, 6200)
+    }, 2800)
 
     const hideTimer = window.setTimeout(() => {
       setIsWelcomeVisible(false)
-    }, 7000)
+    }, 3500)
 
     return () => {
       window.clearTimeout(closeTimer)
@@ -202,18 +197,13 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!donationStatus.message) {
-      return undefined
+    if (contactStatus.message) {
+      const timer = setTimeout(() => {
+        setContactStatus({ type: '', message: '' })
+      }, 5000)
+      return () => clearTimeout(timer)
     }
-
-    const timer = window.setTimeout(() => {
-      setDonationStatus({ type: '', message: '' })
-    }, 5000)
-
-    return () => {
-      window.clearTimeout(timer)
-    }
-  }, [donationStatus.message])
+  }, [contactStatus.message])
 
   const handleNavToggle = () => {
     setIsNavOpen((open) => !open)
@@ -223,128 +213,127 @@ function App() {
     setIsNavOpen(false)
   }
 
-  const handleDonationInputChange = (event) => {
+  const handleContactChange = (event) => {
     const { name, value } = event.target
-    setDonationForm((current) => ({ ...current, [name]: value }))
 
-    if (donationError) {
-      setDonationError('')
-    }
-    if (donationStatus.message) {
-      setDonationStatus({ type: '', message: '' })
+    setContactForm((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+    }))
+
+    setContactErrors((currentErrors) => {
+      if (!currentErrors[name]) {
+        return currentErrors
+      }
+
+      const nextErrors = { ...currentErrors }
+      delete nextErrors[name]
+      return nextErrors
+    })
+
+    if (contactStatus.message) {
+      setContactStatus({ type: '', message: '' })
     }
   }
 
-  const handleDonationAmountSelect = (amount) => {
-    setDonationForm((current) => ({ ...current, amount: String(amount) }))
+  const validateContactForm = (formValues) => {
+    const errors = {}
 
-    if (donationError) {
-      setDonationError('')
+    if (!namePattern.test(formValues.name)) {
+      errors.name = 'Enter a valid full name using letters, spaces, apostrophes, or hyphens.'
     }
-    if (donationStatus.message) {
-      setDonationStatus({ type: '', message: '' })
+
+    if (!emailPattern.test(formValues.email)) {
+      errors.email = 'Enter a valid email address in the format name@example.com.'
     }
+
+    if (!subjectPattern.test(formValues.subject)) {
+      errors.subject = 'Subject must be 5 to 120 characters and start with a letter or number.'
+    }
+
+    if (!messagePattern.test(formValues.message)) {
+      errors.message = 'Message must be between 20 and 1200 characters.'
+    }
+
+    return errors
   }
 
-  const handleDonationSubmit = async (event) => {
+  const handleContactSubmit = async (event) => {
     event.preventDefault()
 
     const trimmedForm = {
-      name: donationForm.name.trim(),
-      email: donationForm.email.trim(),
-      amount: donationForm.amount.trim(),
+      name: contactForm.name.trim(),
+      email: contactForm.email.trim(),
+      subject: contactForm.subject.trim(),
+      message: contactForm.message.trim(),
     }
-    const amountValue = Number(trimmedForm.amount)
 
-    if (!namePattern.test(trimmedForm.name)) {
-      setDonationError('Enter a valid full name before continuing to payment.')
+    const validationErrors = validateContactForm(trimmedForm)
+
+    if (Object.keys(validationErrors).length > 0) {
+      setContactErrors(validationErrors)
+      setContactStatus({
+        type: 'error',
+        message: 'Please fix the highlighted fields and try again.',
+      })
       return
     }
 
-    if (!emailPattern.test(trimmedForm.email)) {
-      setDonationError('Enter a valid email address before continuing to payment.')
-      return
-    }
+    setContactErrors({})
 
-    if (!Number.isFinite(amountValue) || amountValue <= 0) {
-      setDonationError('Enter a donation amount greater than 0.')
-      return
-    }
-
-    if (!paystackPublicKey) {
-      setDonationStatus({
+    if (!contactEndpoint) {
+      setContactStatus({
         type: 'error',
         message:
-          'Donation checkout is not configured yet. Add VITE_PAYSTACK_PUBLIC_KEY to your frontend .env file.',
+          'Contact form is not configured yet. Add VITE_CONTACT_FORM_ENDPOINT to your frontend .env file to enable sending.',
       })
       return
     }
 
-    const Paystack = typeof window !== 'undefined' ? window.Paystack || window.PaystackPop : null
-
-    if (!Paystack) {
-      setDonationError('Paystack checkout could not load. Please refresh the page and try again.')
-      return
-    }
-
-    setDonationError('')
-    setDonationStatus({ type: '', message: '' })
-    setIsDonationLoading(true)
+    setIsSubmittingContact(true)
 
     try {
-      const reference = `IHF-${Date.now()}`
-      const transaction = new Paystack()
+      const response = await fetch(contactEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(trimmedForm),
+      })
 
-      transaction.newTransaction({
-        key: paystackPublicKey,
-        email: trimmedForm.email,
-        amount: Math.round(amountValue * 100),
-        currency: 'GHS',
-        reference,
-        firstName: trimmedForm.name.split(' ')[0] || trimmedForm.name,
-        lastName: trimmedForm.name.split(' ').slice(1).join(' '),
-        metadata: {
-          custom_fields: [
-            {
-              display_name: 'Donor Name',
-              variable_name: 'donor_name',
-              value: trimmedForm.name,
-            },
-          ],
-        },
-        onLoad: () => {
-          setIsDonationLoading(false)
-        },
-        onSuccess: (result) => {
-          setIsDonationLoading(false)
-          setDonationStatus({
-            type: 'success',
-            message: `Thank you for your contribution. Payment reference: ${result.reference}.`,
-          })
-          setDonationForm((current) => ({ ...current, amount: '50' }))
-        },
-        onCancel: () => {
-          setIsDonationLoading(false)
-          setDonationStatus({
-            type: 'info',
-            message: 'Donation checkout was cancelled before payment was completed.',
-          })
-        },
-        onError: (error) => {
-          setIsDonationLoading(false)
-          setDonationStatus({
-            type: 'error',
-            message:
-              error?.message || 'We could not start the Paystack checkout. Please try again.',
-          })
-        },
+      if (!response.ok) {
+        let errorMessage = 'Unable to submit form'
+
+        try {
+          const errorData = await response.json()
+          if (errorData?.errors?.length) {
+            errorMessage = errorData.errors.map((item) => item.message).join(' ')
+          }
+        } catch {
+          // Fall back to the default message when the response is not JSON.
+        }
+
+        throw new Error(errorMessage)
+      }
+
+      setContactForm({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      })
+      setContactStatus({
+        type: 'success',
+        message: 'Your message has been sent successfully. We will get back to you soon.',
       })
     } catch (error) {
-      setIsDonationLoading(false)
-      setDonationStatus({
+      setContactStatus({
         type: 'error',
-        message: 'We could not start the Paystack checkout. Please try again.',
+        message: `${error.message}. If the issue continues, please email rolandbissah10@gmail.com directly.`,
       })
+    } finally {
+      setIsSubmittingContact(false)
     }
   }
 
@@ -403,8 +392,8 @@ function App() {
             ))}
           </nav>
 
-          <a className="nav-cta" href="#join">
-            Support a Cause
+          <a className="nav-cta" href="#donate">
+            Donate
           </a>
         </header>
 
@@ -425,7 +414,7 @@ function App() {
               </p>
 
               <div className="hero-actions">
-                <a className="primary-button" href="#join">
+                <a className="primary-button" href="#contact">
                   Become a volunteer
                 </a>
                 <a className="secondary-button" href="#programs">
@@ -457,15 +446,6 @@ function App() {
                 <h2>Envisioning a world where everyone belongs and no one is left out.</h2>
               </div>
             </div>
-          </section>
-
-          <section className="impact-strip" id="impact">
-            {impactStats.map((stat) => (
-              <article key={stat.label} className="stat-card">
-                <strong>{stat.value}</strong>
-                <span>{stat.label}</span>
-              </article>
-            ))}
           </section>
 
           <section className="about-section" id="about">
@@ -604,106 +584,9 @@ function App() {
                   <p className="event-meta">{event.meta}</p>
                   <h3>{event.title}</h3>
                   <p>{event.text}</p>
-                  <a href="#join">Register interest</a>
+                  <a href="#contact">Register interest</a>
                 </article>
               ))}
-            </div>
-          </section>
-
-          <section className="donation-section" id="donate">
-            <div className="section-heading">
-              <p className="eyebrow">Donate</p>
-              <h2>Contribute securely and help the mission move faster.</h2>
-              <p>
-                Choose an amount or enter your own contribution, then complete payment through Paystack.
-              </p>
-            </div>
-
-            <div className="donation-layout">
-              <article className="donation-story-card">
-                <p className="eyebrow">Why it matters</p>
-                <h3>Your support helps InspireHope respond with dignity, speed, and care.</h3>
-                <p>
-                  Contributions can help fund community outreach, urgent family support,
-                  volunteer coordination, and practical tools that make assistance easier to deliver.
-                </p>
-                <ul className="donation-list">
-                  <li>Support emergency assistance for families in need</li>
-                  <li>Back community events and volunteer-led programs</li>
-                  <li>Strengthen transparent, digital-first coordination efforts</li>
-                </ul>
-              </article>
-
-              <form className="donation-form-card" onSubmit={handleDonationSubmit}>
-                <div className="donation-amount-grid" aria-label="Suggested donation amounts">
-                  {donationAmounts.map((amount) => (
-                    <button
-                      key={amount}
-                      type="button"
-                      className={`donation-chip ${donationForm.amount === String(amount) ? 'donation-chip-active' : ''}`}
-                      onClick={() => handleDonationAmountSelect(amount)}
-                    >
-                      GHS {amount}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="contact-form-grid">
-                  <label className="contact-field">
-                    <span>Full name</span>
-                    <input
-                      type="text"
-                      name="name"
-                      value={donationForm.name}
-                      onChange={handleDonationInputChange}
-                      placeholder="Your full name"
-                      required
-                    />
-                  </label>
-
-                  <label className="contact-field">
-                    <span>Email</span>
-                    <input
-                      type="email"
-                      name="email"
-                      value={donationForm.email}
-                      onChange={handleDonationInputChange}
-                      placeholder="you@example.com"
-                      required
-                    />
-                  </label>
-
-                  <label className="contact-field contact-field-full">
-                    <span>Amount in GHS</span>
-                    <input
-                      type="number"
-                      name="amount"
-                      value={donationForm.amount}
-                      onChange={handleDonationInputChange}
-                      min="1"
-                      step="0.01"
-                      placeholder="Enter amount"
-                      required
-                    />
-                  </label>
-                </div>
-
-                <div className="contact-form-actions">
-                  <button className="primary-button contact-submit" type="submit" disabled={isDonationLoading}>
-                    {isDonationLoading ? 'Opening Paystack...' : 'Proceed to Payment'}
-                  </button>
-                </div>
-
-                {donationError ? (
-                  <p className="contact-status contact-status-error">{donationError}</p>
-                ) : null}
-
-                {donationStatus.message ? (
-                  <p className={`contact-status contact-status-${donationStatus.type}`}>
-                    {donationStatus.message}
-                  </p>
-                ) : null}
-              </form>
             </div>
           </section>
 
@@ -723,31 +606,123 @@ function App() {
             </div>
           </section>
 
-          <section className="join-banner" id="join">
-            <div>
-              <p className="eyebrow">Get involved</p>
-              <h2>Bring your generosity, your time, or your voice.</h2>
-              <p>
-                Join InspireHope Foundation and help create a digital-first support
-                system that turns compassion into coordinated action for people who
-                deserve both belonging and the opportunity to thrive.
-              </p>
-            </div>
-
-            <div className="join-actions">
-              <a className="primary-button" href="mailto:hello@inspirehopefoundation.org">
-                Contact the foundation
-              </a>
-              <a className="secondary-button secondary-button-light" href="#home">
-                Return to top
-              </a>
-            </div>
-          </section>
-
-          <section className="contact-section">
+          <section className="contact-section" id="contact">
             <div className="section-heading">
               <p className="eyebrow">Contact</p>
               <h2>Reach out to partner, volunteer, donate, or learn more.</h2>
+              <p>
+                Use the form below to send your message directly from the site and we will
+                get back to you as soon as we can.
+              </p>
+            </div>
+
+            <div className="contact-layout">
+              <form
+                className="contact-form-card"
+                onSubmit={handleContactSubmit}
+              >
+                {contactStatus.message ? (
+                  <div className={`contact-status-panel contact-status-${contactStatus.type}`} role="status" aria-live="polite">
+                    {contactStatus.type === 'success' ? (
+                      <>
+                        <p className="contact-success-kicker">Message sent</p>
+                        <h3>Thank you for reaching out.</h3>
+                        <p>
+                          Your message has been submitted successfully. Our team will review it
+                          and get back to you soon.
+                        </p>
+                      </>
+                    ) : (
+                      <p>{contactStatus.message}</p>
+                    )}
+                  </div>
+                ) : null}
+
+                <div className="contact-form-grid">
+                  <label className="contact-field">
+                    <span>Name</span>
+                    <input
+                      type="text"
+                      name="name"
+                      value={contactForm.name}
+                      onChange={handleContactChange}
+                      placeholder="Your full name"
+                      pattern={namePattern.source}
+                      minLength="2"
+                      maxLength="80"
+                      aria-invalid={contactErrors.name ? 'true' : 'false'}
+                      required
+                    />
+                    {contactErrors.name ? (
+                      <small className="contact-field-error">{contactErrors.name}</small>
+                    ) : null}
+                  </label>
+
+                  <label className="contact-field">
+                    <span>Email</span>
+                    <input
+                      type="email"
+                      name="email"
+                      value={contactForm.email}
+                      onChange={handleContactChange}
+                      placeholder="you@example.com"
+                      pattern={emailPattern.source}
+                      aria-invalid={contactErrors.email ? 'true' : 'false'}
+                      required
+                    />
+                    {contactErrors.email ? (
+                      <small className="contact-field-error">{contactErrors.email}</small>
+                    ) : null}
+                  </label>
+
+                  <label className="contact-field contact-field-full">
+                    <span>Subject</span>
+                    <input
+                      type="text"
+                      name="subject"
+                      value={contactForm.subject}
+                      onChange={handleContactChange}
+                      placeholder="How can we help?"
+                      pattern={subjectPattern.source}
+                      minLength="5"
+                      maxLength="120"
+                      aria-invalid={contactErrors.subject ? 'true' : 'false'}
+                      required
+                    />
+                    {contactErrors.subject ? (
+                      <small className="contact-field-error">{contactErrors.subject}</small>
+                    ) : null}
+                  </label>
+
+                  <label className="contact-field contact-field-full">
+                    <span>Message</span>
+                    <textarea
+                      name="message"
+                      value={contactForm.message}
+                      onChange={handleContactChange}
+                      placeholder="Tell us how you would like to connect with InspireHope Foundation."
+                      rows="6"
+                      minLength="20"
+                      maxLength="1200"
+                      aria-invalid={contactErrors.message ? 'true' : 'false'}
+                      required
+                    />
+                    {contactErrors.message ? (
+                      <small className="contact-field-error">{contactErrors.message}</small>
+                    ) : null}
+                  </label>
+                </div>
+
+                <div className="contact-form-actions">
+                  <button
+                    className="primary-button contact-submit"
+                    type="submit"
+                    disabled={isSubmittingContact}
+                  >
+                    {isSubmittingContact ? 'Sending...' : 'Send message'}
+                  </button>
+                </div>
+              </form>
             </div>
 
             <div className="contact-grid">
@@ -775,12 +750,11 @@ function App() {
 
           <div className="footer-links">
             <a href="#about">About</a>
-            <a href="#impact">Impact</a>
             <a href="#programs">Programs</a>
             <a href="#members">Members</a>
             <a href="#faq">FAQ</a>
             <a href="#events">Events</a>
-            <a href="#join">Contact</a>
+            <a href="#contact">Contact</a>
           </div>
         </footer>
       </div>
