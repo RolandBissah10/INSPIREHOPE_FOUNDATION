@@ -1086,7 +1086,8 @@
   .about-section,
   .stories-grid,
   .contact-grid,
-  .contact-layout {
+  .contact-layout,
+  .donation-layout {
     grid-template-columns: 1fr;
   }
 
