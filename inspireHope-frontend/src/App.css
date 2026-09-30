@@ -935,24 +935,27 @@
 }
 
 .member-photo {
-  aspect-ratio: 4 / 4.5;
+  padding: 2rem 1rem;
   display: grid;
   place-items: center;
   background:
     radial-gradient(circle at top, rgba(36, 149, 130, 0.18), transparent 40%),
     linear-gradient(145deg, rgba(13, 95, 86, 0.95), rgba(222, 136, 70, 0.86));
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
-.member-photo span {
-  padding: 0.6rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: rgba(255, 255, 255, 0.1);
-  font-size: 0.78rem;
+.member-avatar {
+  width: 7.5rem;
+  height: 7.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 24px rgba(17, 55, 50, 0.22);
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .member-content {

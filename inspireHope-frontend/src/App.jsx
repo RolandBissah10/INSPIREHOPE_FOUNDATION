@@ -136,19 +136,19 @@ const members = [
   },
   {
     name: 'Rose Kumi-Larbi',
-    role: 'Programs Coordinator',
+    role: 'Programs and Outreach Lead',
     detail:
       'Oversees outreach activities, volunteer experiences, and program delivery to ensure every initiative reaches people well.',
   },
   {
     name: 'Margaret Hunt',
-    role: 'Community Support Lead',
+    role: 'Beneficiary Support Lead',
     detail:
       'Works directly with beneficiaries and families, helping the team deliver assistance with dignity and care.',
   },
   {
     name: 'Francis Roland Bissah',
-    role: 'Just an IT guy...',
+    role: 'Tech Lead, Donor Relations',
     detail:
       'Builds trust with supporters by coordinating campaigns, stewardship, and transparent communication around impact.',
   },
@@ -156,9 +156,16 @@ const members = [
     name: 'Henry Amankwah Famiyeh',
     role: 'Media Team Lead',
     detail:
-      'Shapes the foundation voice, shares impact stories, and helps the wider community stay informed and engaged.',
+      'Leads photography, videography, and social media efforts to share the foundation story and highlight community impact.',
   },
 ]
+
+const getInitials = (name) => {
+  const parts = name.trim().split(/\s+/)
+  const first = parts[0]?.[0] ?? ''
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : ''
+  return `${first}${last}`.toUpperCase()
+}
 
 const navLinks = [
   { href: '#about', label: 'About' },
@@ -540,7 +547,7 @@ function App() {
         </header>
 
         <main id="home">
-          <section className="hero-section">
+a          <section className="hero-section">
             <div className="hero-copy">
               <p className="eyebrow">
                 Mission: Igniting change, uniting heart and uplifting communities.
@@ -676,17 +683,18 @@ function App() {
               <p className="eyebrow">Our members</p>
               <h2>The people helping the mission take shape every day.</h2>
               <p>
-                This section is ready for your team photos. Each member card can display
-                an image, role, and short profile so visitors can connect with the people
-                behind InspireHope Foundation.
+                Each member card shares a role and short profile so visitors can connect
+                with the people behind InspireHope Foundation.
               </p>
             </div>
 
             <div className="members-grid">
               {members.map((member) => (
                 <article key={member.name} className="member-card">
-                  <div className="member-photo" aria-label={`${member.name} photo placeholder`}>
-                    <span>Add image</span>
+                  <div className="member-photo">
+                    <span className="member-avatar" role="img" aria-label={`${member.name} avatar`}>
+                      {getInitials(member.name)}
+                    </span>
                   </div>
                   <div className="member-content">
                     <p className="member-role">{member.role}</p>
