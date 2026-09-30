@@ -980,7 +980,7 @@ a          <section className="hero-section">
               </article>
               <article className="contact-card">
                 <p className="contact-label">Phone</p>
-                <strong>+233 20 000 0000</strong>
+                <strong>+233 25 672 8245</strong>
               </article>
               <article className="contact-card">
                 <p className="contact-label">Location</p>
