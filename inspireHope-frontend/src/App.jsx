@@ -547,7 +547,7 @@ function App() {
         </header>
 
         <main id="home">
-a          <section className="hero-section">
+          <section className="hero-section">
             <div className="hero-copy">
               <p className="eyebrow">
                 Mission: Igniting change, uniting heart and uplifting communities.
